@@ -10,6 +10,7 @@ class Config:
     VK_API_VERSION = None
     VK_GROUP_ID = None
     LOG_FILE = None
+    USERS_FILE = None
 
     TEMPLATE_VK_ACCESS_TOKEN = "<GROUP_ACCESS_TOKEN>"
     TEMPLATE_VK_GROUP_ID = "<GROUP_ID>"
@@ -17,8 +18,8 @@ class Config:
     config_path = None
     logger = None
 
-    def __init__(self, path):
-        self.config_path = path
+    def __init__(self, config_path):
+        self.config_path = config_path
         self.load_config()
         self.logger = logging.getLogger('vk_bot_application.config')
 
@@ -30,6 +31,7 @@ class Config:
             self.VK_GROUP_ID = config.get("VK_Settings", "group_id")
             self.VK_API_ENDPOINT = config.get("VK_Settings", "api_endpoint")
             self.LOG_FILE = config.get("Log", "logfile")
+            self.USERS_FILE = config.get("Users", "usersfile")
         except NoSectionError as e:
             msg = "Load config error : {0}".format(e)
             print msg
@@ -59,9 +61,6 @@ class Config:
         return config
 
     def create_config(self):
-        """
-        Create a config file
-        """
         config = ConfigParser()
         config.add_section("VK_Settings")
         config.set("VK_Settings", "access_token", self.TEMPLATE_VK_ACCESS_TOKEN)
@@ -71,6 +70,9 @@ class Config:
 
         config.add_section("Log")
         config.set("Log", "logfile", "vk_bot.log")
+
+        config.add_section("Users")
+        config.set("Users", "usersfile", "users.data")
 
         with open(self.config_path, "w") as config_file:
             config.write(config_file)

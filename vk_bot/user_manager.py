@@ -5,12 +5,12 @@ from ConfigParser import ConfigParser, NoOptionError, NoSectionError
 
 class UserManager:
     users = {}
-    users_path = "users.data"
+    users_path = ""
     logger = None
 
-    def __init__(self):
+    def __init__(self, users_path):
+        self.users_path = users_path
         self.logger = logging.getLogger('vk_bot_application.userManager')
-
         if not os.path.exists(self.users_path):
             self.create_config()
 

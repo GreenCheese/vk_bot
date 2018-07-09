@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
-import random  # tmp
-
+import sys
+import os
 from config import Config
 from log import Log
 from user_manager import UserManager
@@ -14,13 +14,15 @@ class VKBotApplication:
     botAPI = None
     uManager = None
 
-    def __init__(self, path):
-        self.cfg = Config(path)
-        self.logger = Log.get_logger(self.cfg.LOG_FILE)
+    def __init__(self, setting_file):
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+
+        self.cfg = Config(os.path.join(dir_path, setting_file))
+        self.logger = Log.get_logger(os.path.join(dir_path, self.cfg.LOG_FILE))
         self.cfg.verify_config()
         self.botAPI = VkApi(self.cfg)
-        self.uManager = UserManager()
-        self.logger.info("VKBot started")
+        self.uManager = UserManager(os.path.join(dir_path, self.cfg.USERS_FILE))
+        self.logger.info("\nVKBot started")
 
     def get_members(self):
         self.logger.info("getting_members")
@@ -76,13 +78,18 @@ class VKBotApplication:
 
     def send_message(self, message, user_ids):
         cap = 100
-        msg = "{0} : {1}".format(random.randint(0, 1000), message)
+
         if not user_ids:
             self.logger.info("no user to send message")
             return
 
-        batch_users = []
+        if message == "" or not message:
+            self.logger.info("no message to send")
+            return
 
+        msg = message.decode('string_escape')
+
+        batch_users = []
         if len(user_ids) > 1:
             for user_id in user_ids:
                 batch_users.append(user_id)
@@ -105,13 +112,15 @@ class VKBotApplication:
 
 
 if __name__ == "__main__":
-    setting_path = "settings.cfg"
-    message_to_send = "This is a test message to send"
+    setting_file = "settings.cfg"
 
-    app = VKBotApplication(setting_path)
+    try:
+        message_to_send = str(sys.argv[1])
+    except IndexError:
+        message_to_send = ""
 
+    app = VKBotApplication(setting_file)
     members_id = app.get_members()
     non_blocked_users = app.skip_blocked_users(members_id)
     allowedMembers = app.check_allowed_receive_message(non_blocked_users)
-
     app.send_message(message_to_send, allowedMembers)
