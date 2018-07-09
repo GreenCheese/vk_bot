@@ -1,3 +1,7 @@
+.idea/
+vk_bot/*.cfg
+vk_bot/users.data
+vk_bot/*.log
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
