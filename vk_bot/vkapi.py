@@ -39,6 +39,7 @@ class VkApi:
             error = res.json()['error']
             msg = "Error in request {0}: {2} (error_code is {1})".format(method_name, error['error_code'], error['error_msg'])
             self.logger.warning(msg)
+            return None
 
     def get_members_list(self):
         return self.vk_api_call("groups.getMembers", {"group_id": self.cfg.VK_GROUP_ID})
@@ -52,8 +53,13 @@ class VkApi:
 
     def send_message(self, message, user_id):
         self.logger.info("sending message to {0}".format(user_id))
-        # return self.vk_api_call("messages.send", {"message": message, "user_id": user_id})
-        return "ok"
+        return self.vk_api_call("messages.send", {"message": message, "user_id": user_id})
+        # return "ok"
+
+    def send_messages(self, message, user_ids):
+        self.logger.info("sending messages to {0}".format(user_ids))
+        return self.vk_api_call("messages.send", {"message": message, "user_ids": user_ids})
+        # return "ok"
 
     def get_user_info(self, user_id):
         return self.vk_api_call("users.get", {"user_ids": user_id})

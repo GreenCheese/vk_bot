@@ -35,7 +35,6 @@ class VKBotApplication:
                 # TODO try/catch
                 # TODO multiple list
                 user_info = self.get_user_info(user_id)
-
                 first_name = user_info['response'][0]['first_name'].encode("utf-8")
                 last_name = user_info['response'][0]['last_name'].encode("utf-8")
                 self.uManager.add_user(user_id, -1, 0, "{0} {1}".format(first_name, last_name), "")
@@ -70,7 +69,6 @@ class VKBotApplication:
         self.logger.info("Non blocked users : {0}".format(non_blocked))
         return non_blocked
 
-    # TODO user_id can be multiple
     def get_user_info(self, user_id):
         self.logger.info("Get user {0} info".format(user_id))
         r = self.botAPI.get_user_info(user_id)
@@ -78,16 +76,26 @@ class VKBotApplication:
 
     def send_message(self, message, user_ids):
         cap = 100
+        msg = "{0} : {1}".format(random.randint(0, 1000), message)
         if not user_ids:
             self.logger.info("no user to send message")
             return
 
-        # self.botAPI.send_message(message, user_ids)
+        batch_users = []
 
-        # TODO can send multiple
-        for user_id in user_ids:
-            msg = "{0}-{1} : {2}".format(user_id, random.randint(0, 1000), message)
-            self.botAPI.send_message(msg, user_id)
+        if len(user_ids) > 1:
+            for user_id in user_ids:
+                batch_users.append(user_id)
+                if len(batch_users) == cap:
+                    user_ids_str = ','.join(str(e) for e in batch_users)
+                    self.botAPI.send_messages(msg, user_ids_str)
+                    batch_users = []
+
+            if len(batch_users) > 0:
+                user_ids_str = ','.join(str(e) for e in batch_users)
+                self.botAPI.send_messages(msg, user_ids_str)
+        else:
+            self.botAPI.send_message(msg, user_ids[0])
 
         time = datetime.datetime.now().strftime("%d %B %Y %I:%M%p")
         for user_id in user_ids:
@@ -99,12 +107,11 @@ class VKBotApplication:
 if __name__ == "__main__":
     setting_path = "settings.cfg"
     message_to_send = "This is a test message to send"
+
     app = VKBotApplication(setting_path)
 
     members_id = app.get_members()
     non_blocked_users = app.skip_blocked_users(members_id)
     allowedMembers = app.check_allowed_receive_message(non_blocked_users)
 
-    # TODO can send multiple
     app.send_message(message_to_send, allowedMembers)
-
