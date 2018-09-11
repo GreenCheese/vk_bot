@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import datetime
-import sys
 import os
+import sys
+
 from config import Config
 from log import Log
 from user_manager import UserManager
@@ -115,6 +116,7 @@ class VKBotApplication:
 if __name__ == "__main__":
     setting_file = "settings.cfg"
 
+    # get message to send from arguments
     try:
         message_to_send = str(sys.argv[1])
     except IndexError:
