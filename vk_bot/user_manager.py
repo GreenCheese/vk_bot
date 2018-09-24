@@ -30,7 +30,7 @@ class UserManager:
     def load_users(self):
         config = ConfigParser()
         config.read(self.users_path)
-
+        # TODO fix set user number
         count = 0
         while True:
             try:

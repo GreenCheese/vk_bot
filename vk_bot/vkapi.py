@@ -1,6 +1,8 @@
-import requests
-import urllib
+# import requests
+import json
 import logging
+import urllib
+import urllib2
 
 
 class VkApi:
@@ -11,9 +13,9 @@ class VkApi:
         self.cfg = cfg
         self.logger = logging.getLogger('vk_bot_application.vk_api')
 
-    def request_has_error(self, res):
+    def request_has_error(self, json_response):
         try:
-            error = res.json()['error'] is None
+            error = json_response['error'] is None
         except KeyError:
             error = None
 
@@ -31,12 +33,22 @@ class VkApi:
         headers = {'Content-Type': 'application/json'}
         self.logger.info("request is : {0}".format(url))
 
-        res = requests.get(url, headers=headers)
-        error = self.request_has_error(res)
+        req = urllib2.Request(url, None, headers)
+        res = urllib2.urlopen(req)
+
+        try:
+            json_response = json.load(res)
+        except ValueError as e:
+            msg = "Error trying parse response : {0}".format(e)
+            self.logger.warning(msg)
+            return None
+
+        # res = requests.get(url, headers=headers)
+        error = self.request_has_error(json_response)
         if error is None:
-            return res.json()
+            return json_response
         else:
-            error = res.json()['error']
+            error = json_response['error']
             msg = "Error in request {0}: {2} (error_code is {1})".format(method_name, error['error_code'], error['error_msg'])
             self.logger.warning(msg)
             return None

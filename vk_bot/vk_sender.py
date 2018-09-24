@@ -16,10 +16,10 @@ class VKBotApplication:
     botAPI = None
     uManager = None
 
-    def __init__(self, setting_file):
+    def __init__(self, setting_filename):
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
-        self.cfg = Config(os.path.join(dir_path, setting_file))
+        self.cfg = Config(os.path.join(dir_path, setting_filename))
         self.logger = Log.get_logger(os.path.join(dir_path, self.cfg.LOG_FILE))
         self.cfg.verify_config()
         self.botAPI = VkApi(self.cfg)
@@ -38,6 +38,7 @@ class VKBotApplication:
             if not self.uManager.has_user(user_id):
                 # TODO try/catch
                 # TODO multiple list
+                # TODO check if user leave group
                 user_info = self.get_user_info(user_id)
                 first_name = user_info['response'][0]['first_name'].encode("utf-8")
                 last_name = user_info['response'][0]['last_name'].encode("utf-8")
@@ -58,7 +59,7 @@ class VKBotApplication:
                 self.uManager.set_user_property(member_user_id, "allow", 0)
                 time = self.uManager.get_user_property(member_user_id, "time")
                 if time is None or time == "":
-                    # try send message first time anyway
+                    # try to send message first time anyway
                     allowed_members.append(member_user_id)
 
         self.logger.info("Allowed members are : {0}".format(allowed_members))
