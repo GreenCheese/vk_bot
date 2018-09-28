@@ -26,6 +26,18 @@ class VKBotApplication:
         self.uManager = UserManager(os.path.join(dir_path, self.cfg.USERS_FILE))
         self.logger.info("\nVKBot started")
 
+    def get_id_that_members(self, vk_id_string):
+        vk_id_arr = vk_id_string.split(",")
+        result_id = []
+        members = self.get_members()
+        for vk_id in vk_id_arr:
+            if int(vk_id) not in members:
+                self.logger.info("skip user {0} because he is not group member".format(vk_id))
+            else:
+                result_id.append(int(vk_id))
+        return result_id
+
+
     def get_members(self):
         self.logger.info("getting_members")
         r = self.botAPI.get_members_list()
@@ -119,12 +131,17 @@ if __name__ == "__main__":
 
     # get message to send from arguments
     try:
-        message_to_send = str(sys.argv[1])
+        vk_id_string = str(sys.argv[1])
+        message_to_send = str(sys.argv[2])
     except IndexError:
         message_to_send = ""
+        vk_id_string = ""
 
     app = VKBotApplication(setting_file)
-    members_id = app.get_members()
+
+    # rem members_id = app.get_members()
+
+    members_id = app.get_id_that_members(vk_id_string)
     non_blocked_users = app.skip_blocked_users(members_id)
     allowedMembers = app.check_allowed_receive_message(non_blocked_users)
     app.send_message(message_to_send, allowedMembers)
